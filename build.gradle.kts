@@ -1,13 +1,18 @@
+val projectGroup = "com.conas.novel"
+val projectVersion = project.findProperty("version") as String
+
+group = projectGroup
+version = projectVersion
+
 plugins {
+    id("github.repository") version "1.0.0"
+
     kotlin("jvm") version "2.2.21"
 
     `java-gradle-plugin`
     `kotlin-dsl`
     `maven-publish`
 }
-
-group = "com.conas.novel"
-version = project.findProperty("version") as String
 
 repositories {
     mavenCentral()
@@ -22,15 +27,19 @@ tasks.test {
     useJUnitPlatform()
 }
 
+githubRepository {
+    repository = "novel-plugins"
+}
+
 gradlePlugin {
     plugins {
-        create("publishPlugin") {
-            id = "com.conas.novel.publish"
-            implementationClass = "com.conas.novel.github.PublishPlugin"
+        create("githubPublishPlugin") {
+            id = "github.publication"
+            implementationClass = "com.conas.novel.github.GithubPublicationPlugin"
         }
 
         create("githubRepositoryPlugin") {
-            id = "com.conas.novel.github"
+            id = "github.repository"
             implementationClass = "com.conas.novel.github.GithubRepositoryPlugin"
         }
     }

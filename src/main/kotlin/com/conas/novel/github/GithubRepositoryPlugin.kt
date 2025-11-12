@@ -2,8 +2,8 @@ package com.conas.novel.github
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.kotlin.dsl.*
-import java.net.URI
 
 class GithubRepositoryPlugin: Plugin<Project> {
 
@@ -13,14 +13,14 @@ class GithubRepositoryPlugin: Plugin<Project> {
             GithubRepositoryExtension::class.java
         )
 
-        project.repositories {
-            maven {
-                name = "github_package_repository"
-                url = URI.create("${githubExtension.url}/${githubExtension.repository}")
+        project.plugins.withType<MavenPublishPlugin> {
+            project.afterEvaluate {
+                project.repositories {
+                    GithubRepositoryHelper.githubRepository(this, githubExtension)
+                }
 
-                credentials {
-                    username = githubExtension.username
-                    password = githubExtension.token
+                repositories {
+                    GithubRepositoryHelper.githubRepository(this, githubExtension)
                 }
             }
         }
