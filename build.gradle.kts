@@ -1,17 +1,13 @@
-val projectGroup = "com.conas.novel"
-val projectVersion = project.findProperty("version") as String
-
-group = projectGroup
-version = projectVersion
+group = "com.conas.novel"
+version = project.findProperty("version") as String
 
 plugins {
-    id("github.repository") version "1.0.0"
+    id("github.repository") version "0.0.2"
 
     kotlin("jvm") version "2.2.21"
 
     `java-gradle-plugin`
     `kotlin-dsl`
-    `maven-publish`
 }
 
 repositories {
