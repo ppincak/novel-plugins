@@ -6,7 +6,7 @@ import org.gradle.process.ExecOperations
 import java.io.ByteArrayOutputStream
 import javax.inject.Inject
 
-abstract class PublishWithTagTask @Inject constructor(
+abstract class TagAndPushTask @Inject constructor(
     private val execOperations: ExecOperations
 ) : DefaultTask() {
 

@@ -1,0 +1,10 @@
+Registered Publications:
+Maven Publication: "publication1"
+    Group: com.conas.novel
+    Artifact: artifact1
+    Version: 1.0.0
+
+Maven Publication: "publication2"
+    Group: com.conas.novel
+    Artifact: artifact2
+    Version: 2.0.0
