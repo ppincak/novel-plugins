@@ -6,8 +6,8 @@ Gradle plugins for Maven publishing automation and GitHub Packages integration.
 
 ```kotlin
 plugins {
-    id("com.conas.novel.github.publication") version "1.0.0"
-    id("com.conas.novel.github.repository") version "1.0.0"
+    id("github.publication") version "1.2.0"
+    id("github.repository") version "1.2.0"
 }
 
 githubRepository {
@@ -25,6 +25,7 @@ gpr.url=https://maven.pkg.github.com/owner
 ### Tasks
 
 - `publishWithTag` - Publishes to GitHub Packages and creates Git tag `v${version}`
+- `listPublications` - Lists all registered Maven publications
 
 ## Development
 
@@ -34,4 +35,4 @@ gpr.url=https://maven.pkg.github.com/owner
 ./gradlew publishToMavenLocal  # Install locally
 ```
 
-**Requirements**: Gradle 8.x, Kotlin 2.2.21
+**Requirements**: Gradle 9.x, Kotlin 2.2.21

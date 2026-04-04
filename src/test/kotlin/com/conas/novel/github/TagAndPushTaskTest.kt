@@ -32,30 +32,31 @@ class TagAndPushTaskTest {
         val mockExecSpec = mockk<ExecSpec>(relaxed = true)
         val mockExecResult = mockk<ExecResult>()
 
-        val actionSlot = slot<Action<ExecSpec>>()
+        val actionSlots = mutableListOf<Action<ExecSpec>>()
         every {
-            mockExecOperations.exec(capture(actionSlot))
+            mockExecOperations.exec(capture(actionSlots))
         } returns mockExecResult
 
-        val task = project.tasks.create(
+        val task = project.tasks.register(
             "tagWithGit",
             TagAndPushTask::class.java,
             mockExecOperations
-        )
+        ).get()
         task.project.version = "1.0.0"
 
         // WHEN
         task.execute()
 
         // THEN
-        verify { mockExecOperations.exec(any<Action<ExecSpec>>()) }
-        assertThat(actionSlot.isCaptured).isTrue()
+        verify(exactly = 2) { mockExecOperations.exec(any<Action<ExecSpec>>()) }
+        assertThat(actionSlots).hasSize(2)
 
-        actionSlot.captured.execute(mockExecSpec)
-
+        actionSlots[0].execute(mockExecSpec)
         verify {
-            mockExecSpec.commandLine("git", "tag", "-a", "v1.0.0", "-m", "\"Release v1.0.0\"")
+            mockExecSpec.commandLine("git", "tag", "-a", "v1.0.0", "-m", "Release v1.0.0")
         }
+
+        actionSlots[1].execute(mockExecSpec)
         verify {
             mockExecSpec.commandLine("git", "push", "origin", "v1.0.0")
         }

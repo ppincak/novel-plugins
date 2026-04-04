@@ -8,7 +8,7 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.repositories
 import org.gradle.kotlin.dsl.withType
 
-class GithubRepositoryPlugin: Plugin<Project> {
+class GithubRepositoryPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         project.pluginManager.apply(MavenPublishPlugin::class.java)

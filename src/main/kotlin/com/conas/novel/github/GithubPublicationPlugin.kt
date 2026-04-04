@@ -10,7 +10,7 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
 
-class GithubPublicationPlugin: Plugin<Project> {
+class GithubPublicationPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         project.pluginManager.apply(GithubRepositoryPlugin::class.java)
