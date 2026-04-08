@@ -2,6 +2,7 @@ package com.conas.novel.github
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.JavaPlatformPlugin
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
@@ -18,6 +19,8 @@ class GithubPublicationPlugin : Plugin<Project> {
             project.afterEvaluate {
                 val projectVersion = project.version.toString()
                 val projectGroupId = project.group.toString()
+                val isJavaPlatform = project.plugins.hasPlugin(JavaPlatformPlugin::class.java)
+                val componentName = if (isJavaPlatform) "javaPlatform" else "java"
 
                 project.configure<PublishingExtension> {
                     publications {
@@ -26,7 +29,7 @@ class GithubPublicationPlugin : Plugin<Project> {
                             artifactId = project.name
                             version = projectVersion
 
-                            from(project.components["java"])
+                            from(project.components[componentName])
                         }
                     }
                 }

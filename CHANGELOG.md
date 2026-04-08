@@ -1,3 +1,9 @@
+# version 1.5
+- added `java-platform` support to `GithubPublicationPlugin` — publishes from `javaPlatform` component when the `java-platform` plugin is applied
+
+# version 1.4
+- skipped due to incorrect `run`
+
 # version 1.3
 - updated Gradle to 9.4.1
 - resolved deprecations
