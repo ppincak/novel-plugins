@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.testfixtures.ProjectBuilder
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.junit.jupiter.api.io.TempDir
@@ -18,6 +19,44 @@ class GithubPublicationPluginTest {
     @ValueSource(strings = ["java", "java-platform"])
     fun `publishes mavenJava publication for supported project types`(pluginId: String) {
         // GIVEN
+        val project = createProject(pluginId)
+
+        // WHEN
+        project.evaluate()
+
+        // THEN
+        val publishing = project.extensions.getByType(PublishingExtension::class.java)
+        val publication = publishing.publications.getByName("mavenJava") as MavenPublication
+
+        assertThat(publication.groupId).isEqualTo("com.conas.novel")
+        assertThat(publication.artifactId).isEqualTo(project.name)
+        assertThat(publication.version).isEqualTo("1.0.0")
+    }
+
+    @Test
+    fun `skips mavenJava publication when existing publication with same artifactId exists`() {
+        // GIVEN
+        val project = createProject("java")
+
+        // Pre-register a publication with the same artifactId (simulates java-gradle-plugin)
+        project.extensions.configure(PublishingExtension::class.java) {
+            publications.create("pluginMaven", MavenPublication::class.java) {
+                artifactId = project.name
+            }
+        }
+
+        // WHEN
+        project.evaluate()
+
+        // THEN
+        val publishing = project.extensions.getByType(PublishingExtension::class.java)
+        val publicationNames = publishing.publications.map { it.name }
+
+        assertThat(publicationNames).contains("pluginMaven")
+        assertThat(publicationNames).doesNotContain("mavenJava")
+    }
+
+    private fun createProject(pluginId: String): org.gradle.api.internal.project.ProjectInternal {
         val project = ProjectBuilder.builder()
             .withProjectDir(testProjectDir)
             .build()
@@ -34,15 +73,6 @@ class GithubPublicationPluginTest {
         project.group = "com.conas.novel"
         project.version = "1.0.0"
 
-        // WHEN
-        (project as org.gradle.api.internal.project.ProjectInternal).evaluate()
-
-        // THEN
-        val publishing = project.extensions.getByType(PublishingExtension::class.java)
-        val publication = publishing.publications.getByName("mavenJava") as MavenPublication
-
-        assertThat(publication.groupId).isEqualTo("com.conas.novel")
-        assertThat(publication.artifactId).isEqualTo(project.name)
-        assertThat(publication.version).isEqualTo("1.0.0")
+        return project as org.gradle.api.internal.project.ProjectInternal
     }
 }

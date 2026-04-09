@@ -2,8 +2,8 @@ group = "com.conas.novel"
 version = project.findProperty("version") as String
 
 plugins {
-    id("github.repository") version "1.3.0"
-    id("github.publication") version "1.3.0"
+    id("github.repository") version "1.6.0"
+    id("github.publication") version "1.6.0"
 
     kotlin("jvm") version "2.2.21"
 
@@ -16,8 +16,9 @@ repositories {
 }
 
 dependencies {
-    testImplementation("org.assertj:assertj-core:3.27.7")
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
+
+    testImplementation("org.assertj:assertj-core:3.27.7")
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:1.14.6")
     testImplementation(gradleTestKit())

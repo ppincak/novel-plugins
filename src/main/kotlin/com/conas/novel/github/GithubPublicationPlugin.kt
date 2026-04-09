@@ -23,13 +23,24 @@ class GithubPublicationPlugin : Plugin<Project> {
                 val componentName = if (isJavaPlatform) "javaPlatform" else "java"
 
                 project.configure<PublishingExtension> {
-                    publications {
-                        register("mavenJava", MavenPublication::class) {
-                            groupId = projectGroupId
-                            artifactId = project.name
-                            version = projectVersion
+                    val hasExistingPublication = publications.withType(MavenPublication::class.java)
+                        .any { it.artifactId == project.name }
 
-                            from(project.components[componentName])
+                    if (hasExistingPublication) {
+                        project.logger.lifecycle(
+                            "Skipping 'mavenJava' publication for '{}': a publication with artifactId '{}' already exists",
+                            project.name,
+                            project.name
+                        )
+                    } else {
+                        publications {
+                            register("mavenJava", MavenPublication::class) {
+                                groupId = projectGroupId
+                                artifactId = project.name
+                                version = projectVersion
+
+                                from(project.components[componentName])
+                            }
                         }
                     }
                 }

@@ -1,3 +1,6 @@
+# version 1.6
+- skip `mavenJava` publication when an existing publication with the same `artifactId` already exists (avoids conflict with `java-gradle-plugin`'s `pluginMaven`)
+
 # version 1.5
 - added `java-platform` support to `GithubPublicationPlugin` — publishes from `javaPlatform` component when the `java-platform` plugin is applied
 
