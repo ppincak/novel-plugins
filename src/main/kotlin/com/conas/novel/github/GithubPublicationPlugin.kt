@@ -51,5 +51,6 @@ class GithubPublicationPlugin : Plugin<Project> {
         project.tasks.register("publishWithTag", TagAndPushTask::class.java) {
             dependsOn("publish")
         }
+        project.tasks.register("tagAndPush", TagAndPushTask::class.java)
     }
 }

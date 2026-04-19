@@ -6,8 +6,8 @@ Gradle plugins for Maven publishing automation and GitHub Packages integration.
 
 ```kotlin
 plugins {
-    id("github.publication") version "1.6.0"
-    id("github.repository") version "1.6.0"
+    id("github.publication") version "1.7.0"
+    id("github.repository") version "1.7.0"
 }
 
 githubRepository {
@@ -30,6 +30,7 @@ gpr.url=https://maven.pkg.github.com/owner
 ### Tasks
 
 - `publishWithTag` - Publishes to GitHub Packages and creates Git tag `v${version}`
+- `tagAndPush` - Creates and pushes Git tag `v${version}` without publishing
 - `listPublications` - Lists all registered Maven publications
 
 ## Development

@@ -1,3 +1,6 @@
+# version 1.7
+- added standalone `tagAndPush` task that creates and pushes the `v${version}` git tag without triggering `publish` (use when you only need to tag a release separately from publishing)
+
 # version 1.6
 - skip `mavenJava` publication when an existing publication with the same `artifactId` already exists (avoids conflict with `java-gradle-plugin`'s `pluginMaven`)
 

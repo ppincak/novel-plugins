@@ -12,7 +12,7 @@ Gradle plugins for Maven publishing automation and GitHub Packages integration.
 
 ## Plugins
 
-- **`github.publication`** — Automates Maven publishing with Git tag creation (`publishWithTag` task)
+- **`github.publication`** — Automates Maven publishing with Git tag creation (`publishWithTag`, `tagAndPush` tasks)
 - **`github.repository`** — Configures GitHub Packages as a Maven repository for resolution and deployment
 
 ## Project Configuration
