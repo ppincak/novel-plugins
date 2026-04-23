@@ -22,7 +22,7 @@ abstract class TagAndPushTask @Inject constructor(
             exec(outputStream, "git", "tag", "-a", releaseTag, "-m", "Release $releaseTag")
             exec(outputStream, "git", "push", "origin", releaseTag)
         } finally {
-            println(outputStream.toString())
+            logger.lifecycle(outputStream.toString().trimEnd())
         }
     }
 

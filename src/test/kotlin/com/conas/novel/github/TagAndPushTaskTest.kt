@@ -2,7 +2,6 @@ package com.conas.novel.github
 
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.api.Action

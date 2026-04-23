@@ -1,11 +1,10 @@
+import com.conas.novel.github.githubPackage
+
 group = "com.conas.novel"
 version = project.findProperty("version") as String
 
 plugins {
-    id("github.repository") version "1.6.0"
-    id("github.publication") version "1.6.0"
-
-    kotlin("jvm") version "2.2.21"
+    id("github.publication") version "2.5.0"
 
     `java-gradle-plugin`
     `kotlin-dsl`
@@ -13,10 +12,15 @@ plugins {
 
 repositories {
     mavenCentral()
+
+    githubPackage(project) {
+        repository = "novel-scraper"
+    }
 }
 
 dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
+    testImplementation(platform("com.conas.novel:scraper-bom:2.0.1"))
 
     testImplementation("org.assertj:assertj-core:3.27.7")
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -29,20 +33,11 @@ tasks.test {
     useJUnitPlatform()
 }
 
-githubRepository {
-    repository = "novel-plugins"
-}
-
 gradlePlugin {
     plugins {
         create("githubPublishPlugin") {
             id = "github.publication"
             implementationClass = "com.conas.novel.github.GithubPublicationPlugin"
-        }
-
-        create("githubRepositoryPlugin") {
-            id = "github.repository"
-            implementationClass = "com.conas.novel.github.GithubRepositoryPlugin"
         }
     }
 }

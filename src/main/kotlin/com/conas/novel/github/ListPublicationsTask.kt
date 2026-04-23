@@ -13,14 +13,15 @@ abstract class ListPublicationsTask : DefaultTask() {
     fun execute() {
         val publishing = project.extensions.getByType(PublishingExtension::class.java)
         val publications = publishing.publications.filterIsInstance<MavenPublication>()
-        val output = buildString {
-            appendLine("Registered Publications:")
-            publications.forEachIndexed { index, publication ->
-                appendLine()
-                appendLine("  [${index + 1}] ${publication.name}")
-                appendLine("      ${publication.groupId}:${publication.artifactId}:${publication.version}")
-            }
-        }
-        print(output)
+        logger.lifecycle(formatPublications(publications))
     }
 }
+
+internal fun formatPublications(publications: List<MavenPublication>): String = buildString {
+    appendLine("Registered Publications:")
+    publications.forEachIndexed { index, publication ->
+        appendLine()
+        appendLine("  [${index + 1}] ${publication.name}")
+        appendLine("      ${publication.groupId}:${publication.artifactId}:${publication.version}")
+    }
+}.trimEnd()

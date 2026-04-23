@@ -1,13 +1,15 @@
 package com.conas.novel.github
 
 import org.assertj.core.api.Assertions.assertThat
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.kotlin.dsl.configure
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 class GithubPublicationPluginTest {
@@ -56,6 +58,74 @@ class GithubPublicationPluginTest {
         assertThat(publicationNames).doesNotContain("mavenJava")
     }
 
+    @Test
+    fun `skips mavenJava publication when java-gradle-plugin is applied`() {
+        // GIVEN
+        val project = createProject("java-gradle-plugin")
+
+        // WHEN
+        project.evaluate()
+
+        // THEN
+        val publishing = project.extensions.getByType(PublishingExtension::class.java)
+        assertThat(publishing.publications.map { it.name }).doesNotContain("mavenJava")
+    }
+
+    @Test
+    fun `auto-wires publishing repository when gpr properties are set`() {
+        // GIVEN
+        val project = createProject("java")
+        project.extensions.extraProperties["gpr.url"] = "https://maven.pkg.github.com"
+        project.extensions.extraProperties["repository"] = "test-repo"
+        project.extensions.extraProperties["gpr.user"] = "test-user"
+        project.extensions.extraProperties["gpr.token"] = "test-token"
+
+        // WHEN
+        project.evaluate()
+
+        // THEN
+        val publishing = project.extensions.getByType(PublishingExtension::class.java)
+        val repo = publishing.repositories.getByName("github_package_test-repo") as MavenArtifactRepository
+        assertThat(repo.url.toString()).isEqualTo("https://maven.pkg.github.com/test-repo")
+    }
+
+    @Test
+    fun `does not duplicate publishing repository when already explicitly configured`() {
+        // GIVEN
+        val project = createProject("java")
+        project.extensions.extraProperties["gpr.url"] = "https://maven.pkg.github.com"
+        project.extensions.extraProperties["repository"] = "test-repo"
+        project.extensions.extraProperties["gpr.user"] = "test-user"
+        project.extensions.extraProperties["gpr.token"] = "test-token"
+
+        project.configure<PublishingExtension> {
+            repositories.githubPackage(project)
+        }
+
+        // WHEN
+        project.evaluate()
+
+        // THEN
+        val publishing = project.extensions.getByType(PublishingExtension::class.java)
+        val matchingRepos = publishing.repositories
+            .withType(MavenArtifactRepository::class.java)
+            .filter { it.url.toString() == "https://maven.pkg.github.com/test-repo" }
+        assertThat(matchingRepos).hasSize(1)
+    }
+
+    @Test
+    fun `does not add publishing repository when gpr properties are absent`() {
+        // GIVEN
+        val project = createProject("java")
+
+        // WHEN
+        project.evaluate()
+
+        // THEN
+        val publishing = project.extensions.getByType(PublishingExtension::class.java)
+        assertThat(publishing.repositories).isEmpty()
+    }
+
     private fun createProject(pluginId: String): org.gradle.api.internal.project.ProjectInternal {
         val project = ProjectBuilder.builder()
             .withProjectDir(testProjectDir)
@@ -63,12 +133,6 @@ class GithubPublicationPluginTest {
 
         project.pluginManager.apply(pluginId)
         project.pluginManager.apply(GithubPublicationPlugin::class.java)
-
-        val extension = project.extensions.getByName("githubRepository") as GithubRepositoryExtension
-        extension.url = "https://maven.pkg.github.com"
-        extension.repository = "test-repo"
-        extension.username = "test-user"
-        extension.token = "test-token"
 
         project.group = "com.conas.novel"
         project.version = "1.0.0"

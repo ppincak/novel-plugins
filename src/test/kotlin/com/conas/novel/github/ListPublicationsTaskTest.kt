@@ -7,9 +7,7 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.PrintStream
 
 class ListPublicationsTaskTest {
 
@@ -38,20 +36,13 @@ class ListPublicationsTaskTest {
             version = "2.0.0"
         }
 
-        val task = project.tasks.register("listPublications", ListPublicationsTask::class.java).get()
-        val outputStream = ByteArrayOutputStream()
-        val originalOut = System.out
-        System.setOut(PrintStream(outputStream))
+        val publications = publishing.publications.filterIsInstance<MavenPublication>()
 
-        try {
-            // WHEN
-            task.execute()
+        // WHEN
+        val output = formatPublications(publications)
 
-            // THEN
-            assertThat(outputStream.toString())
-                .containsIgnoringNewLines(ResourceUtils.getResourceAsString("./expected_publications.txt"))
-        } finally {
-            System.setOut(originalOut)
-        }
+        // THEN
+        assertThat(output)
+            .containsIgnoringNewLines(ResourceUtils.getResourceAsString("./expected_publications.txt"))
     }
 }

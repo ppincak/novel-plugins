@@ -4,22 +4,49 @@ Gradle plugins for Maven publishing automation and GitHub Packages integration.
 
 ## Usage
 
+Apply the plugin:
+
 ```kotlin
 plugins {
-    id("github.publication") version "1.7.0"
-    id("github.repository") version "1.7.0"
-}
-
-githubRepository {
-    repository = "your-repo-name"
+    id("github.publication") version "2.1.0"
 }
 ```
 
-Configure credentials in `gradle.properties`:
+Configure repositories using the `githubPackage` extension function:
+
+```kotlin
+repositories {
+    githubPackage(project) {
+        repository = "your-deps-repo"
+    }
+}
+
+publishing {
+    repositories {
+        githubPackage(project) {
+            repository = "your-publish-repo"
+        }
+    }
+}
+```
+
+### Global Gradle Properties
+
+`gpr.url`, `gpr.user`, and `gpr.token` are recommended global properties. Set them once in `~/.gradle/gradle.properties` (user home, not committed to source control) so they are shared across all projects:
+
 ```properties
-gpr.user=username
-gpr.token=github_token
-gpr.url=https://maven.pkg.github.com/owner
+gpr.url=https://maven.pkg.github.com/your-org
+gpr.user=your-github-username
+gpr.token=your-github-token
+```
+
+Any of these can be overridden per call if needed:
+
+```kotlin
+githubPackage(project) {
+    repository = "your-repo"
+    token = System.getenv("CUSTOM_TOKEN") ?: ""
+}
 ```
 
 ### Features
