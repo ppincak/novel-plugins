@@ -1,3 +1,7 @@
+# version 2.0.1
+- `tagAndPush` and `publishWithTag` tasks are now only registered on the root project, preventing duplicate git tag pushes in multi-project builds
+- fixed GitHub publishing repository not being registered: `registerPublicationRepository` now runs eagerly in `apply()` instead of inside `afterEvaluate`, so the repository is visible before `MavenPublishPlugin` locks in the publish task graph
+
 # version 2.0.0
 - replaced `githubRepository {}` shared extension with a `githubPackage(project)` extension function on `RepositoryHandler` — call it directly in `repositories {}` for dependency resolution and in `publishing { repositories {} }` for publishing, each configured independently
 - `gpr.url`, `gpr.user`, `gpr.token` are loaded automatically from project properties as defaults and can be overridden per call

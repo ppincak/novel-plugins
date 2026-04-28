@@ -4,7 +4,7 @@ group = "com.conas.novel"
 version = project.findProperty("version") as String
 
 plugins {
-    id("github.publication") version "2.0.0"
+    id("github.publication") version "2.0.1"
 
     `java-gradle-plugin`
     `kotlin-dsl`
@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation(platform("com.conas.novel:scraper-bom:2.0.1"))
+    testImplementation(platform("com.conas.novel:novel-dependencies:3.0.2"))
 
     testImplementation("org.assertj:assertj-core")
     testImplementation("org.junit.jupiter:junit-jupiter")

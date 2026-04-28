@@ -11,6 +11,7 @@ import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
+import org.gradle.api.internal.project.ProjectInternal
 
 class GithubPublicationPluginTest {
 
@@ -73,12 +74,13 @@ class GithubPublicationPluginTest {
 
     @Test
     fun `auto-wires publishing repository when gpr properties are set`() {
-        // GIVEN
-        val project = createProject("java")
-        project.extensions.extraProperties["gpr.url"] = "https://maven.pkg.github.com"
-        project.extensions.extraProperties["repository"] = "test-repo"
-        project.extensions.extraProperties["gpr.user"] = "test-user"
-        project.extensions.extraProperties["gpr.token"] = "test-token"
+        // GIVEN - properties must be available before the plugin is applied, mirroring gradle.properties load order
+        val project = createProject("java", mapOf(
+            "gpr.url" to "https://maven.pkg.github.com",
+            "repository" to "test-repo",
+            "gpr.user" to "test-user",
+            "gpr.token" to "test-token"
+        ))
 
         // WHEN
         project.evaluate()
@@ -91,13 +93,15 @@ class GithubPublicationPluginTest {
 
     @Test
     fun `does not duplicate publishing repository when already explicitly configured`() {
-        // GIVEN
-        val project = createProject("java")
-        project.extensions.extraProperties["gpr.url"] = "https://maven.pkg.github.com"
-        project.extensions.extraProperties["repository"] = "test-repo"
-        project.extensions.extraProperties["gpr.user"] = "test-user"
-        project.extensions.extraProperties["gpr.token"] = "test-token"
+        // GIVEN - properties available before apply so the plugin auto-wires the repo eagerly
+        val project = createProject("java", mapOf(
+            "gpr.url" to "https://maven.pkg.github.com",
+            "repository" to "test-repo",
+            "gpr.user" to "test-user",
+            "gpr.token" to "test-token"
+        ))
 
+        // explicit second registration — duplicate detection should suppress it
         project.configure<PublishingExtension> {
             repositories.githubPackage(project)
         }
@@ -126,10 +130,40 @@ class GithubPublicationPluginTest {
         assertThat(publishing.repositories).isEmpty()
     }
 
-    private fun createProject(pluginId: String): org.gradle.api.internal.project.ProjectInternal {
+    @Test
+    fun `tagAndPush and publishWithTag are only registered on the root project`() {
+        // GIVEN
+        val rootProject = ProjectBuilder.builder()
+            .withProjectDir(testProjectDir)
+            .withName("root")
+            .build()
+
+        val subProject = ProjectBuilder.builder()
+            .withParent(rootProject)
+            .withName("sub")
+            .build()
+
+        rootProject.pluginManager.apply("java")
+        rootProject.pluginManager.apply(GithubPublicationPlugin::class.java)
+        subProject.pluginManager.apply("java")
+        subProject.pluginManager.apply(GithubPublicationPlugin::class.java)
+
+        // THEN
+        assertThat(rootProject.tasks.findByName("tagAndPush")).isNotNull()
+        assertThat(rootProject.tasks.findByName("publishWithTag")).isNotNull()
+        assertThat(subProject.tasks.findByName("tagAndPush")).isNull()
+        assertThat(subProject.tasks.findByName("publishWithTag")).isNull()
+    }
+
+    private fun createProject(
+        pluginId: String,
+        properties: Map<String, String> = emptyMap()
+    ): ProjectInternal {
         val project = ProjectBuilder.builder()
             .withProjectDir(testProjectDir)
             .build()
+
+        properties.forEach { (key, value) -> project.extensions.extraProperties[key] = value }
 
         project.pluginManager.apply(pluginId)
         project.pluginManager.apply(GithubPublicationPlugin::class.java)

@@ -15,6 +15,9 @@ class GithubPublicationPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         project.pluginManager.apply(MavenPublishPlugin::class.java)
+        registerPublicationRepository(project)
+        registerTasks(project)
+
         project.afterEvaluate {
             val projectVersion = project.version.toString()
             val projectGroupId = project.group.toString()
@@ -41,9 +44,7 @@ class GithubPublicationPlugin : Plugin<Project> {
                     }
                 }
             }
-            registerPublication(project)
         }
-        registerTasks(project)
     }
 
     private fun shouldSkipPublication(project: Project, publications: PublicationContainer): Boolean {
@@ -53,7 +54,7 @@ class GithubPublicationPlugin : Plugin<Project> {
         return publications.withType(MavenPublication::class.java).any { it.artifactId == project.name }
     }
 
-    private fun registerPublication(project: Project) {
+    private fun registerPublicationRepository(project: Project) {
         // Note: automatically add 'github' package to publishing repositories
         if (project.propertyExists("gpr.url") && project.propertyExists("repository")) {
             project.configure<PublishingExtension> {
@@ -69,9 +70,12 @@ class GithubPublicationPlugin : Plugin<Project> {
 
     private fun registerTasks(project: Project) {
         project.tasks.register("listPublications", ListPublicationsTask::class.java)
-        project.tasks.register("publishWithTag", TagAndPushTask::class.java) {
-            dependsOn("publish")
+        // repo wide operation should not be done per `subproject`
+        if (project == project.rootProject) {
+            project.tasks.register("publishWithTag", TagAndPushTask::class.java) {
+                dependsOn("publish")
+            }
+            project.tasks.register("tagAndPush", TagAndPushTask::class.java)
         }
-        project.tasks.register("tagAndPush", TagAndPushTask::class.java)
     }
 }
