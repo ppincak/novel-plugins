@@ -1,35 +1,47 @@
 # AGENTS.md
 
-Gradle plugin for Maven publishing automation against the novel Maven repository (Reposilite, see `novel-dev`).
+<!-- shared:start: generated from the novel workspace (agents/shared.md) by `task agents:sync`, do not edit -->
+## Workspace
 
-## Build Commands
+This repository is part of the novel-proofreading workspace. The sibling repositories, in dependency order:
 
-```bash
-./gradlew build
-./gradlew test
-./gradlew clean
-```
+| Repository            | Contents                                                      |
+|-----------------------|---------------------------------------------------------------|
+| `novel-gradle-plugin` | `novel.publication` Gradle plugin (publishing + git tags)     |
+| `novel-dependencies`  | Shared dependency BOM                                         |
+| `novel-scraper`       | Web novel scraper (`scraper-*` modules, `scraper-bom`)        |
+| `novel-llm`           | LLM provider clients and prompts (`novel-llm-*`, `novel-llm-bom`) |
+| `novel-proofreader`   | Translation / proofreading pipeline                           |
+| `novel-dev`           | Local infrastructure (Reposilite Maven repository, Docker)    |
 
-## Plugins
+Each one builds standalone against the published versions of the others. In the workspace checkout, the root composite
+build uses the local sources instead.
 
-- **`novel.publication`** — Automates Maven publishing with Git tag creation (`publishWithTag`, `tagAndPush` tasks); applies `MavenPublishPlugin` internally
+## Build conventions
 
-Repository configuration is done via the `novelRepository(project) {}` extension function on `RepositoryHandler`, callable in both `repositories {}` and `publishing { repositories {} }` blocks. Settings come from `novel.repo.url|user|token` properties or `NOVEL_REPO_URL|USER|TOKEN` environment variables.
+- Kotlin/JVM, Gradle 9 with Kotlin DSL; `./gradlew build`, `./gradlew test`, `./gradlew :module:test`.
+- Group IDs `com.conas.*`; the version is in `gradle.properties`.
+- Publishing goes to the novel Maven repository (Reposilite, started from `novel-dev`) via the `novel.publication`
+  plugin and `novelRepository(project)`. Settings come from the Gradle properties `novel.repo.url|user|token`, falling
+  back to the env vars `NOVEL_REPO_URL|USER|TOKEN`, default `http://localhost:8080/private`.
+- Redeploying an existing version is rejected, so bump the version before publishing again.
+- `PKIX path building failed` errors on Maven Central come from Avast HTTPS scanning on the dev machine, not from the
+  build.
 
-## Project Configuration
+## Testing
 
-- **Group ID**: `com.conas.novel`
-- **Version**: Managed via `gradle.properties`
-- **Plugin IDs**: `novel.publication`
-- **Test Framework**: JUnit 5 with MockK and AssertJ
+- JUnit 5 with AssertJ; use `mockk` for all mocking, never Mockito or other mock libraries.
+- Do not duplicate tests. If two tests verify the same behavior, collapse them.
+- Use parametrized tests (`@ParameterizedTest` / `@MethodSource`) when the same logic is exercised with multiple inputs.
+- Structure every test body with `// GIVEN`, `// WHEN`, `// THEN` section comments.
 
-# Coding guideline
+## Coding guideline
 
-Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+Behavioral guidelines to reduce common LLM coding mistakes.
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
-## 1. Think Before Coding
+### 1. Think Before Coding
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
 
@@ -39,7 +51,7 @@ Before implementing:
 - If a simpler approach exists, say so. Push back when warranted.
 - If something is unclear, stop. Name what's confusing. Ask.
 
-## 2. Simplicity First
+### 2. Simplicity First
 
 **Minimum code that solves the problem. Nothing speculative.**
 
@@ -51,7 +63,7 @@ Before implementing:
 
 Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 
-## 3. Surgical Changes
+### 3. Surgical Changes
 
 **Touch only what you must. Clean up only your own mess.**
 
@@ -67,7 +79,7 @@ When your changes create orphans:
 
 The test: Every changed line should trace directly to the user's request.
 
-## 4. Goal-Driven Execution
+### 4. Goal-Driven Execution
 
 **Define success criteria. Loop until verified.**
 
@@ -85,6 +97,17 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
----
+**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and
+clarifying questions come before implementation rather than after mistakes.
+<!-- shared:end -->
 
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+## novel-gradle-plugin
+
+Gradle plugin for Maven publishing automation against the novel Maven repository.
+
+- **`novel.publication`**: automates Maven publishing with git tag creation (`publishWithTag`, `tagAndPush` tasks) and
+  applies `MavenPublishPlugin` internally.
+- Repository configuration goes through the `novelRepository(project) {}` extension on `RepositoryHandler`, usable in
+  both `repositories {}` and `publishing { repositories {} }`.
+- The plugin's own build doesn't apply the plugin (bootstrap loop); it publishes with plain `maven-publish`.
+- Group ID `com.conas.novel`, package `com.conas.novel.publication`. Tests use JUnit 5, MockK and AssertJ.
