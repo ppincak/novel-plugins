@@ -1,51 +1,69 @@
 # Novel Gradle Plugin
 
-Gradle plugins for Maven publishing automation and GitHub Packages integration.
+Gradle plugin for Maven publishing automation against the novel Maven repository (a Reposilite instance, see `novel-dev`).
 
 ## Usage
 
-Apply the plugin:
+Apply the plugin (resolved from the novel repository, see `pluginManagement` below):
 
 ```kotlin
 plugins {
-    id("github.publication") version "2.1.0"
+    id("novel.publication") version "1.0.0"
 }
 ```
 
-Configure repositories using the `githubPackage` extension function:
+The plugin registers the novel repository as a publishing repository automatically. For dependency resolution add it
+with the `novelRepository` extension function:
 
 ```kotlin
 repositories {
-    githubPackage(project) {
-        repository = "your-deps-repo"
-    }
-}
-
-publishing {
-    repositories {
-        githubPackage(project) {
-            repository = "your-publish-repo"
-        }
-    }
+    mavenCentral()
+    novelRepository(project)
 }
 ```
 
-### Global Gradle Properties
+### Repository settings
 
-`gpr.url`, `gpr.user`, and `gpr.token` are recommended global properties. Set them once in `~/.gradle/gradle.properties` (user home, not committed to source control) so they are shared across all projects:
+Each setting is resolved from the Gradle property first, then from the environment variable:
 
-```properties
-gpr.url=https://maven.pkg.github.com/your-org
-gpr.user=your-github-username
-gpr.token=your-github-token
-```
+| Gradle property    | Environment variable | Default                         |
+|--------------------|----------------------|---------------------------------|
+| `novel.repo.url`   | `NOVEL_REPO_URL`     | `http://localhost:8080/private` |
+| `novel.repo.user`  | `NOVEL_REPO_USER`    |                                 |
+| `novel.repo.token` | `NOVEL_REPO_TOKEN`   |                                 |
 
-Any of these can be overridden per call if needed:
+Set them once as user environment variables or in `~/.gradle/gradle.properties` (never commit the token).
+`http://` URLs are allowed (`isAllowInsecureProtocol`), as the default repository runs locally.
+
+Any of them can be overridden per call:
 
 ```kotlin
-githubPackage(project) {
-    repository = "your-repo"
+novelRepository(project) {
+    url = "https://repo.example.com/private"
     token = System.getenv("CUSTOM_TOKEN") ?: ""
+}
+```
+
+The plugin itself has to be resolved before it is applied, so `settings.gradle.kts` resolves the same settings manually:
+
+```kotlin
+pluginManagement {
+    repositories {
+        maven {
+            val repoUrl = providers.gradleProperty("novel.repo.url")
+                .orElse(providers.environmentVariable("NOVEL_REPO_URL"))
+                .getOrElse("http://localhost:8080/private")
+
+            name = "novel_repository"
+            url = uri(repoUrl)
+            isAllowInsecureProtocol = repoUrl.startsWith("http://")
+            credentials {
+                username = providers.gradleProperty("novel.repo.user").orElse(providers.environmentVariable("NOVEL_REPO_USER")).orNull
+                password = providers.gradleProperty("novel.repo.token").orElse(providers.environmentVariable("NOVEL_REPO_TOKEN")).orNull
+            }
+        }
+        gradlePluginPortal()
+    }
 }
 ```
 
@@ -56,7 +74,7 @@ githubPackage(project) {
 
 ### Tasks
 
-- `publishWithTag` - Publishes to GitHub Packages and creates Git tag `v${version}`
+- `publishWithTag` - Publishes to the novel repository and creates Git tag `v${version}`
 - `tagAndPush` - Creates and pushes Git tag `v${version}` without publishing
 - `listPublications` - Lists all registered Maven publications
 
@@ -65,7 +83,7 @@ githubPackage(project) {
 ```bash
 ./gradlew build                # Build the project
 ./gradlew test                 # Run tests
-./gradlew publishToMavenLocal  # Install locally
+./gradlew publish              # Publish to the novel repository (start it first: `task dev:up` in the workspace)
 ```
 
 **Requirements**: Gradle 9.x, Kotlin 2.2.21

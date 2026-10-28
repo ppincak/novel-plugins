@@ -1,4 +1,4 @@
-package com.conas.novel.github
+package com.conas.novel.publication
 
 import io.mockk.every
 import io.mockk.mockk

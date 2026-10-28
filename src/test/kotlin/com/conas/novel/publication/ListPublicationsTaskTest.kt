@@ -1,4 +1,4 @@
-package com.conas.novel.github
+package com.conas.novel.publication
 
 import com.conas.novel.ResourceUtils
 import org.assertj.core.api.Assertions.assertThat

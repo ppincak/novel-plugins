@@ -1,4 +1,4 @@
-package com.conas.novel.github
+package com.conas.novel.publication
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -11,7 +11,7 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.register
 
-class GithubPublicationPlugin : Plugin<Project> {
+class NovelPublicationPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         project.pluginManager.apply(MavenPublishPlugin::class.java)
@@ -55,16 +55,9 @@ class GithubPublicationPlugin : Plugin<Project> {
     }
 
     private fun registerPublicationRepository(project: Project) {
-        // Note: automatically add 'github' package to publishing repositories
-        if (project.propertyExists("gpr.url") && project.propertyExists("repository")) {
-            project.configure<PublishingExtension> {
-                repositories.githubPackage(project)
-            }
-        } else {
-            project.logger.lifecycle(
-                "Missing 'gpr.url' or 'repository' property for {} — skipping publication repository definition.",
-                project.name
-            )
+        // Note: automatically add the novel repository to publishing repositories
+        project.configure<PublishingExtension> {
+            repositories.novelRepository(project)
         }
     }
 

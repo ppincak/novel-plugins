@@ -1,4 +1,4 @@
-package com.conas.novel.github
+package com.conas.novel.publication
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.publish.PublishingExtension

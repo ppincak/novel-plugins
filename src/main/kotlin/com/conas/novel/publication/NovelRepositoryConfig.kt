@@ -1,8 +1,7 @@
-package com.conas.novel.github
+package com.conas.novel.publication
 
-class GithubPackageConfig {
+class NovelRepositoryConfig {
     var url: String = ""
-    var repository: String = ""
     var username: String = ""
     var token: String = ""
     var name: String = ""

@@ -1,4 +1,4 @@
-package com.conas.novel.github
+package com.conas.novel.publication
 
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
 import org.gradle.api.internal.project.ProjectInternal
 
-class GithubPublicationPluginTest {
+class NovelPublicationPluginTest {
 
     @TempDir
     lateinit var testProjectDir: File
@@ -73,13 +73,12 @@ class GithubPublicationPluginTest {
     }
 
     @Test
-    fun `auto-wires publishing repository when gpr properties are set`() {
+    fun `auto-wires publishing repository from novel repo properties`() {
         // GIVEN - properties must be available before the plugin is applied, mirroring gradle.properties load order
         val project = createProject("java", mapOf(
-            "gpr.url" to "https://maven.pkg.github.com",
-            "repository" to "test-repo",
-            "gpr.user" to "test-user",
-            "gpr.token" to "test-token"
+            "novel.repo.url" to "https://repo.example.com/private",
+            "novel.repo.user" to "test-user",
+            "novel.repo.token" to "test-token"
         ))
 
         // WHEN
@@ -87,23 +86,21 @@ class GithubPublicationPluginTest {
 
         // THEN
         val publishing = project.extensions.getByType(PublishingExtension::class.java)
-        val repo = publishing.repositories.getByName("github_package_test-repo") as MavenArtifactRepository
-        assertThat(repo.url.toString()).isEqualTo("https://maven.pkg.github.com/test-repo")
+        val repo = publishing.repositories.getByName(DEFAULT_REPOSITORY_NAME) as MavenArtifactRepository
+        assertThat(repo.url.toString()).isEqualTo("https://repo.example.com/private")
+        assertThat(repo.credentials.username).isEqualTo("test-user")
     }
 
     @Test
     fun `does not duplicate publishing repository when already explicitly configured`() {
         // GIVEN - properties available before apply so the plugin auto-wires the repo eagerly
         val project = createProject("java", mapOf(
-            "gpr.url" to "https://maven.pkg.github.com",
-            "repository" to "test-repo",
-            "gpr.user" to "test-user",
-            "gpr.token" to "test-token"
+            "novel.repo.url" to "https://repo.example.com/private"
         ))
 
         // explicit second registration — duplicate detection should suppress it
         project.configure<PublishingExtension> {
-            repositories.githubPackage(project)
+            repositories.novelRepository(project)
         }
 
         // WHEN
@@ -111,23 +108,7 @@ class GithubPublicationPluginTest {
 
         // THEN
         val publishing = project.extensions.getByType(PublishingExtension::class.java)
-        val matchingRepos = publishing.repositories
-            .withType(MavenArtifactRepository::class.java)
-            .filter { it.url.toString() == "https://maven.pkg.github.com/test-repo" }
-        assertThat(matchingRepos).hasSize(1)
-    }
-
-    @Test
-    fun `does not add publishing repository when gpr properties are absent`() {
-        // GIVEN
-        val project = createProject("java")
-
-        // WHEN
-        project.evaluate()
-
-        // THEN
-        val publishing = project.extensions.getByType(PublishingExtension::class.java)
-        assertThat(publishing.repositories).isEmpty()
+        assertThat(publishing.repositories).hasSize(1)
     }
 
     @Test
@@ -144,9 +125,9 @@ class GithubPublicationPluginTest {
             .build()
 
         rootProject.pluginManager.apply("java")
-        rootProject.pluginManager.apply(GithubPublicationPlugin::class.java)
+        rootProject.pluginManager.apply(NovelPublicationPlugin::class.java)
         subProject.pluginManager.apply("java")
-        subProject.pluginManager.apply(GithubPublicationPlugin::class.java)
+        subProject.pluginManager.apply(NovelPublicationPlugin::class.java)
 
         // THEN
         assertThat(rootProject.tasks.findByName("tagAndPush")).isNotNull()
@@ -166,7 +147,7 @@ class GithubPublicationPluginTest {
         properties.forEach { (key, value) -> project.extensions.extraProperties[key] = value }
 
         project.pluginManager.apply(pluginId)
-        project.pluginManager.apply(GithubPublicationPlugin::class.java)
+        project.pluginManager.apply(NovelPublicationPlugin::class.java)
 
         project.group = "com.conas.novel"
         project.version = "1.0.0"
