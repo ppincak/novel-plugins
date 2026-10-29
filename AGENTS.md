@@ -1,13 +1,34 @@
-# AGENTS.md
+# novel-gradle-plugin
 
-<!-- shared:start: generated from the novel workspace (agents/shared.md) by `task agents:sync`, do not edit -->
+Gradle plugin for Maven publishing automation against the novel Maven repository. It is the first project in the
+dependency order: everything else resolves it from the novel repository.
+
+- **`novel.publication`**: automates Maven publishing with git tag creation (`publishWithTag`, `tagAndPush` tasks) and
+  applies `MavenPublishPlugin` internally.
+- Repository configuration goes through the `novelRepository(project) {}` extension on `RepositoryHandler`, usable in
+  both `repositories {}` and `publishing { repositories {} }`.
+
+## Build
+
+- Kotlin/JVM, Gradle 9 with Kotlin DSL (`kotlin-dsl` + `java-gradle-plugin`); `./gradlew build`, `./gradlew test`.
+- Group ID `com.conas.novel`, package `com.conas.novel.publication`; the version is in `gradle.properties`.
+- The plugin's own build doesn't apply the plugin (bootstrap loop). It publishes with plain `maven-publish` to the novel
+  Maven repository (Reposilite, started from `novel-dev`), resolving the repository the same way `novelRepository`
+  does: the Gradle properties `novel.repo.url|user|token`, falling back to the env vars `NOVEL_REPO_URL|USER|TOKEN`,
+  default `http://localhost:8080/private`.
+- It can't use the `novel-dependencies` BOM (it is published first), so test library versions are explicit in
+  `build.gradle.kts`; keep them in line with the BOM.
+- Redeploying an existing version is rejected, so bump the version before publishing again.
+- `PKIX path building failed` errors on Maven Central come from Avast HTTPS scanning on the dev machine, not from the
+  build.
+
 ## Workspace
 
 This repository is part of the novel-proofreading workspace. The sibling repositories, in dependency order:
 
 | Repository            | Contents                                                      |
 |-----------------------|---------------------------------------------------------------|
-| `novel-gradle-plugin` | `novel.publication` Gradle plugin (publishing + git tags)     |
+| **`novel-gradle-plugin`** | `novel.publication` Gradle plugin (publishing + git tags)     |
 | `novel-dependencies`  | Shared dependency BOM                                         |
 | `novel-scraper`       | Web novel scraper (`scraper-*` modules, `scraper-bom`)        |
 | `novel-llm`           | LLM provider clients and prompts (`novel-llm-*`, `novel-llm-bom`) |
@@ -17,20 +38,10 @@ This repository is part of the novel-proofreading workspace. The sibling reposit
 Each one builds standalone against the published versions of the others. In the workspace checkout, the root composite
 build uses the local sources instead.
 
-## Build conventions
-
-- Kotlin/JVM, Gradle 9 with Kotlin DSL; `./gradlew build`, `./gradlew test`, `./gradlew :module:test`.
-- Group IDs `com.conas.*`; the version is in `gradle.properties`.
-- Publishing goes to the novel Maven repository (Reposilite, started from `novel-dev`) via the `novel.publication`
-  plugin and `novelRepository(project)`. Settings come from the Gradle properties `novel.repo.url|user|token`, falling
-  back to the env vars `NOVEL_REPO_URL|USER|TOKEN`, default `http://localhost:8080/private`.
-- Redeploying an existing version is rejected, so bump the version before publishing again.
-- `PKIX path building failed` errors on Maven Central come from Avast HTTPS scanning on the dev machine, not from the
-  build.
-
 ## Testing
 
-- JUnit 5 with AssertJ; use `mockk` for all mocking, never Mockito or other mock libraries.
+- JUnit 5 with AssertJ, plus Gradle TestKit for plugin tests; use `mockk` for all mocking, never Mockito or other mock
+  libraries.
 - Do not duplicate tests. If two tests verify the same behavior, collapse them.
 - Use parametrized tests (`@ParameterizedTest` / `@MethodSource`) when the same logic is exercised with multiple inputs.
 - Structure every test body with `// GIVEN`, `// WHEN`, `// THEN` section comments.
@@ -99,15 +110,3 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and
 clarifying questions come before implementation rather than after mistakes.
-<!-- shared:end -->
-
-## novel-gradle-plugin
-
-Gradle plugin for Maven publishing automation against the novel Maven repository.
-
-- **`novel.publication`**: automates Maven publishing with git tag creation (`publishWithTag`, `tagAndPush` tasks) and
-  applies `MavenPublishPlugin` internally.
-- Repository configuration goes through the `novelRepository(project) {}` extension on `RepositoryHandler`, usable in
-  both `repositories {}` and `publishing { repositories {} }`.
-- The plugin's own build doesn't apply the plugin (bootstrap loop); it publishes with plain `maven-publish`.
-- Group ID `com.conas.novel`, package `com.conas.novel.publication`. Tests use JUnit 5, MockK and AssertJ.
