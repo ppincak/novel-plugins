@@ -5,6 +5,9 @@ dependency order: everything else resolves it from the novel repository.
 
 - **`novel.publication`**: automates Maven publishing with git tag creation (`publishWithTag`, `tagAndPush` tasks) and
   applies `MavenPublishPlugin` internally.
+- **`novel.kotlin-library`**: the shared configuration of the Kotlin modules of all novel projects (`java-library`,
+  Kotlin/JVM, toolchain 25, repositories, JUnit, Log4j and test dependencies, the BOMs of the `novel.platforms`
+  property). The Kotlin version of all projects is the `kotlin-gradle-plugin` dependency in `build.gradle.kts`.
 - Repository configuration goes through the `novelRepository(project) {}` extension on `RepositoryHandler`, usable in
   both `repositories {}` and `publishing { repositories {} }`.
 

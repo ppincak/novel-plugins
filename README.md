@@ -8,7 +8,7 @@ Apply the plugin (resolved from the novel repository, see `pluginManagement` bel
 
 ```kotlin
 plugins {
-    id("novel.publication") version "1.0.0"
+    id("novel.publication") version "1.1.0"
 }
 ```
 
@@ -20,6 +20,34 @@ repositories {
     mavenCentral()
     novelRepository(project)
 }
+```
+
+### Kotlin library modules
+
+`novel.kotlin-library` holds the build configuration every Kotlin module of the novel projects shares: `java-library`
+and Kotlin/JVM (the Kotlin version comes with the plugin), Java toolchain 25, Maven Central and the novel repository,
+JUnit Platform, Log4j and the test libraries (AssertJ, MockK, JUnit params, kotlin-test).
+
+Each module applies the plugins it needs; declare them once with their version in the root `build.gradle.kts`:
+
+```kotlin
+// build.gradle.kts (root)
+plugins {
+    id("novel.kotlin-library") version "1.1.0" apply false
+    id("novel.publication") version "1.1.0" apply false
+}
+
+// <module>/build.gradle.kts
+plugins {
+    id("novel.kotlin-library")
+    id("novel.publication")  // left out for modules that aren't published
+}
+```
+
+The BOMs the modules align their versions with are listed once per project in `gradle.properties`, comma separated:
+
+```properties
+novel.platforms=com.conas.novel:novel-dependencies:1.1.0,com.conas.novel:scraper-bom:1.0.0
 ```
 
 ### Repository settings

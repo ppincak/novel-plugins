@@ -12,6 +12,9 @@ repositories {
 }
 
 dependencies {
+    // Note: the Kotlin version of all novel projects, `novel.kotlin-library` applies the Kotlin plugin by id
+    runtimeOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.21")
+
     // Note: explicit versions (same as novel-dependencies), the plugin is published first and can't depend on the BOM
     testImplementation(platform("org.junit:junit-bom:6.1.3"))
 
@@ -32,6 +35,10 @@ gradlePlugin {
         create("novelPublicationPlugin") {
             id = "novel.publication"
             implementationClass = "com.conas.novel.publication.NovelPublicationPlugin"
+        }
+        create("novelKotlinLibraryPlugin") {
+            id = "novel.kotlin-library"
+            implementationClass = "com.conas.novel.publication.NovelKotlinLibraryPlugin"
         }
     }
 }
