@@ -15,12 +15,13 @@ fun RepositoryHandler.novelRepository(
 ): MavenArtifactRepository {
 
     val config = NovelRepositoryConfig().apply {
-        url = project.setting("novel.repo.url", "NOVEL_REPO_URL").ifEmpty { DEFAULT_REPOSITORY_URL }
+        url = project.setting("novel.repo.url", "NOVEL_REPO_URL")
         username = project.setting("novel.repo.user", "NOVEL_REPO_USER")
         token = project.setting("novel.repo.token", "NOVEL_REPO_TOKEN")
     }.apply(configure)
 
-    val repoUrl = config.url.trimEnd('/')
+    // Note: the default applies after `configure`, so an empty url there falls back to it as well
+    val repoUrl = config.url.ifEmpty { DEFAULT_REPOSITORY_URL }.trimEnd('/')
 
     withType(MavenArtifactRepository::class.java)
         .find { repository -> repository.url.toString().trimEnd('/') == repoUrl }
