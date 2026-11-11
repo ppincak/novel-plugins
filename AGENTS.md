@@ -25,6 +25,12 @@ dependency order: everything else resolves it from the novel repository.
 - `PKIX path building failed` errors on Maven Central come from Avast HTTPS scanning on the dev machine, not from the
   build.
 
+## Workflow
+
+- Each change is made in its own git worktree on a separate branch created from `main`, and committed there. One
+  change per worktree; never mix unrelated changes in one working tree.
+- Remove the worktree once its branch is merged.
+
 ## Workspace
 
 This repository is part of the novel-proofreading workspace. The sibling repositories, in dependency order:
