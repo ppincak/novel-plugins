@@ -55,7 +55,7 @@ novel.platforms=com.conas.novel:novel-dependencies:1.1.0,com.conas.novel:scraper
 Each setting is resolved from the Gradle property first, then from the environment variable:
 
 | Gradle property    | Environment variable | Default                         |
-|--------------------|----------------------|---------------------------------|
+| ------------------ | -------------------- | ------------------------------- |
 | `novel.repo.url`   | `NOVEL_REPO_URL`     | `http://localhost:8080/private` |
 | `novel.repo.user`  | `NOVEL_REPO_USER`    |                                 |
 | `novel.repo.token` | `NOVEL_REPO_TOKEN`   |                                 |

@@ -29,14 +29,14 @@ dependency order: everything else resolves it from the novel repository.
 
 This repository is part of the novel-proofreading workspace. The sibling repositories, in dependency order:
 
-| Repository            | Contents                                                      |
-|-----------------------|---------------------------------------------------------------|
-| **`novel-gradle-plugin`** | `novel.publication` Gradle plugin (publishing + git tags)     |
-| `novel-dependencies`  | Shared dependency BOM                                         |
-| `novel-scraper`       | Web novel scraper (`scraper-*` modules, `scraper-bom`)        |
-| `novel-llm`           | LLM provider clients and prompts (`novel-llm-*`, `novel-llm-bom`) |
-| `novel-proofreader`   | Translation / proofreading pipeline                           |
-| `novel-dev`           | Local infrastructure (Reposilite Maven repository, Docker)    |
+| Repository                | Contents                                                          |
+| ------------------------- | ----------------------------------------------------------------- |
+| **`novel-gradle-plugin`** | `novel.publication` Gradle plugin (publishing + git tags)         |
+| `novel-dependencies`      | Shared dependency BOM                                             |
+| `novel-scraper`           | Web novel scraper (`scraper-*` modules, `scraper-bom`)            |
+| `novel-llm`               | LLM provider clients and prompts (`novel-llm-*`, `novel-llm-bom`) |
+| `novel-proofreader`       | Translation / proofreading pipeline                               |
+| `novel-dev`               | Local infrastructure (Reposilite Maven repository, Docker)        |
 
 Each one builds standalone against the published versions of the others. In the workspace checkout, the root composite
 build uses the local sources instead.
